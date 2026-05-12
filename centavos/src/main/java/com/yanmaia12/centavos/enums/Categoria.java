@@ -12,6 +12,7 @@ public enum Categoria {
     UTILIDADES("Utilidades"),
     PESSOAL("Pessoal"),
     VIAGEM("Viagem"),
+    COFRE("Cofre"),
     DESPESA_OUTROS("Outros"),
 
     // RECEITAS
