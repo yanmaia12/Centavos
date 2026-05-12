@@ -1,0 +1,110 @@
+package com.yanmaia12.centavos.service;
+
+import com.yanmaia12.centavos.dtos.CadastroDTO;
+import com.yanmaia12.centavos.dtos.LoginDTO;
+import com.yanmaia12.centavos.dtos.TransacaoResponseDTO;
+import com.yanmaia12.centavos.dtos.UsuarioResponseDTO;
+import com.yanmaia12.centavos.enums.Categoria;
+import com.yanmaia12.centavos.enums.TipoTransacao;
+import com.yanmaia12.centavos.model.Transacao;
+import com.yanmaia12.centavos.model.Usuario;
+import com.yanmaia12.centavos.repository.UsuarioRepository;
+import jakarta.transaction.Transactional;
+import org.mindrot.jbcrypt.BCrypt;
+import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+
+@Service
+public class UsuarioService {
+
+    private final UsuarioRepository usuarioRepository;
+
+    public UsuarioService(UsuarioRepository usuarioRepository) {
+        this.usuarioRepository = usuarioRepository;
+    }
+
+    @Transactional
+    public UsuarioResponseDTO cadastrarUsuario(CadastroDTO cadastroDTO){
+        boolean existeEmail = usuarioRepository.existsByEmail(cadastroDTO.email());
+        if (existeEmail){
+            throw new RuntimeException("Esse email já está cadastrado!");
+        }
+        if (!Objects.equals(cadastroDTO.senha(), cadastroDTO.confirmarSenha())){
+            throw new RuntimeException("Senhas não são iguais!");
+        }
+        Usuario usuario = new Usuario();
+        usuario.setNome(cadastroDTO.nome());
+        usuario.setEmail(cadastroDTO.email());
+        usuario.setSenha(BCrypt.hashpw(cadastroDTO.senha(), BCrypt.gensalt()));
+        usuario.setMoeda(cadastroDTO.moeda());
+        usuarioRepository.save(usuario);
+        return new UsuarioResponseDTO(usuario.getNome(), usuario.getId(), usuario.getEmail(), usuario.getMoeda());
+    }
+
+    @Transactional
+    public UsuarioResponseDTO logarUsuario(LoginDTO loginDTO){
+        Optional<Usuario> usuarioOptional = usuarioRepository.findByEmail(loginDTO.email());
+        if (usuarioOptional.isEmpty()){
+            throw new RuntimeException("Nenhum usuário cadastrado com esse email!");
+        }
+        Usuario usuario = usuarioOptional.get();
+        if (!BCrypt.checkpw(loginDTO.senha(), usuario.getSenha())){
+            throw new RuntimeException("As senhas não são iguais, tente novamente!");
+        }
+        return new UsuarioResponseDTO(usuario.getNome(), usuario.getId(), usuario.getEmail(), usuario.getMoeda());
+    }
+
+    @Transactional
+    public UsuarioResponseDTO atualizarMoeda(Long id, String moeda){
+        Optional<Usuario> usuarioOptional = usuarioRepository.findById(id);
+        if (usuarioOptional.isEmpty()){
+            throw new RuntimeException("Usuário não encontrado");
+        }
+        Usuario usuario = usuarioOptional.get();
+        usuario.setMoeda(moeda);
+        usuario = usuarioRepository.save(usuario);
+        return new UsuarioResponseDTO(usuario.getNome(), usuario.getId(), usuario.getEmail(), usuario.getMoeda());
+    }
+
+    @Transactional
+    public BigDecimal calcularSaldo(Long id){
+        Optional<Usuario> usuarioOptional = usuarioRepository.findById(id);
+        if (usuarioOptional.isEmpty()){
+            throw new RuntimeException("Usuário não encontrado");
+        }
+
+        Usuario usuario = usuarioOptional.get();
+
+        BigDecimal receita = usuario.getTransacoes().stream()
+                .filter(t -> t.getTipo() == TipoTransacao.RECEITA)
+                .map(Transacao::getValor)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        BigDecimal despesa = usuario.getTransacoes().stream()
+                .filter(t -> t.getTipo() == TipoTransacao.DESPESA)
+                .map(Transacao::getValor)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        return receita.subtract(despesa);
+
+    }
+
+    @Transactional
+    public List<TransacaoResponseDTO> filtrarPorCategoria(Long id, Categoria categoria){
+        Optional<Usuario> usuarioOptional = usuarioRepository.findById(id);
+        if (usuarioOptional.isEmpty()){
+            throw new RuntimeException("Usuário não encontrado");
+        }
+
+        Usuario usuario = usuarioOptional.get();
+
+        return usuario.getTransacoes().stream()
+                .filter(t -> t.getCategoria() == categoria)
+                .map(t -> new TransacaoResponseDTO(t.getId(), t.getValor(), t.getDescricao(),
+                        t.getData(), t.getTipo(), t.getCategoria())).toList();
+    }
+}
