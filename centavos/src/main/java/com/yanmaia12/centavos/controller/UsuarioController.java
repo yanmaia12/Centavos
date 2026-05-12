@@ -1,9 +1,6 @@
 package com.yanmaia12.centavos.controller;
 
-import com.yanmaia12.centavos.dtos.CadastroDTO;
-import com.yanmaia12.centavos.dtos.LoginDTO;
-import com.yanmaia12.centavos.dtos.TransacaoResponseDTO;
-import com.yanmaia12.centavos.dtos.UsuarioResponseDTO;
+import com.yanmaia12.centavos.dtos.*;
 import com.yanmaia12.centavos.model.Usuario;
 import com.yanmaia12.centavos.service.UsuarioService;
 import jakarta.validation.Valid;
@@ -11,7 +8,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/usuario")
@@ -40,6 +39,12 @@ public class UsuarioController {
     public ResponseEntity<UsuarioResponseDTO> atualizarMoeda(@PathVariable Long id, @RequestParam String moeda){
         UsuarioResponseDTO usuarioResponseDTO = usuarioService.atualizarMoeda(id, moeda);
         return ResponseEntity.ok(usuarioResponseDTO);
+    }
+
+    @GetMapping("/{id}/saldo")
+    public ResponseEntity<BigDecimal> getSaldo(@PathVariable Long id){
+        BigDecimal saldo = usuarioService.calcularSaldo(id);
+        return ResponseEntity.ok(saldo);
     }
 
 }

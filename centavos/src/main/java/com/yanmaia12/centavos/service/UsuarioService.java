@@ -1,9 +1,6 @@
 package com.yanmaia12.centavos.service;
 
-import com.yanmaia12.centavos.dtos.CadastroDTO;
-import com.yanmaia12.centavos.dtos.LoginDTO;
-import com.yanmaia12.centavos.dtos.TransacaoResponseDTO;
-import com.yanmaia12.centavos.dtos.UsuarioResponseDTO;
+import com.yanmaia12.centavos.dtos.*;
 import com.yanmaia12.centavos.enums.Categoria;
 import com.yanmaia12.centavos.enums.TipoTransacao;
 import com.yanmaia12.centavos.model.Transacao;
@@ -14,9 +11,13 @@ import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.YearMonth;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 @Service
 public class UsuarioService {
@@ -93,18 +94,4 @@ public class UsuarioService {
 
     }
 
-    @Transactional
-    public List<TransacaoResponseDTO> filtrarPorCategoria(Long id, Categoria categoria){
-        Optional<Usuario> usuarioOptional = usuarioRepository.findById(id);
-        if (usuarioOptional.isEmpty()){
-            throw new RuntimeException("Usuário não encontrado");
-        }
-
-        Usuario usuario = usuarioOptional.get();
-
-        return usuario.getTransacoes().stream()
-                .filter(t -> t.getCategoria() == categoria)
-                .map(t -> new TransacaoResponseDTO(t.getId(), t.getValor(), t.getDescricao(),
-                        t.getData(), t.getTipo(), t.getCategoria())).toList();
-    }
 }
