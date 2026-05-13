@@ -1,5 +1,6 @@
 package com.yanmaia12.centavos.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
@@ -22,7 +23,8 @@ public class Meta {
     @ManyToOne()
     @JoinColumn(name = "usuario_id")
     private Usuario usuario;
-    @OneToMany(mappedBy = "meta", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "meta")
+    @JsonIgnore
     private List<Transacao> transacoes = new ArrayList<>();
 
     public Meta() {

@@ -11,5 +11,6 @@ public record TransacaoResponseDTO(Long id,
                                    String descricao,
                                    LocalDateTime data,
                                    TipoTransacao tipo,
-                                   Categoria categoria) {
+                                   Categoria categoria,
+                                   Long metaId) {
 }

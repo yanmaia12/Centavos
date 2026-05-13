@@ -22,6 +22,8 @@ public class Transacao {
     private Categoria categoria;
     @ManyToOne
     Usuario usuario;
+    @ManyToOne
+    Meta meta;
 
     public Transacao() {
     }
@@ -89,5 +91,13 @@ public class Transacao {
 
     public void setUsuario(Usuario usuario) {
         this.usuario = usuario;
+    }
+
+    public Meta getMeta() {
+        return meta;
+    }
+
+    public void setMeta(Meta meta) {
+        this.meta = meta;
     }
 }

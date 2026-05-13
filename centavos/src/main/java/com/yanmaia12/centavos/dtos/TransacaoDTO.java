@@ -13,5 +13,6 @@ public record TransacaoDTO(@NotNull @Positive BigDecimal valor,
          @NotBlank String descricao,
          @NotNull LocalDateTime data,
          @NotNull TipoTransacao tipo,
-         @NotNull Categoria categoria) {
+         @NotNull Categoria categoria,
+         Long metaId) {
 }
