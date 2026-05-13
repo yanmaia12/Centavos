@@ -32,7 +32,7 @@ public class SecurityFilter extends OncePerRequestFilter{
         if (token != null){
             String email = jwtService.validarToken(token);
 
-            if (email.isEmpty()){
+            if (!email.isEmpty()){
                 Usuario usuario = usuarioRepository.findByEmail(email).orElse(null);
 
                 if (usuario != null){

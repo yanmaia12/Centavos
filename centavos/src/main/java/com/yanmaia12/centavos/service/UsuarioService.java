@@ -24,9 +24,11 @@ import java.util.stream.Collectors;
 public class UsuarioService {
 
     private final UsuarioRepository usuarioRepository;
+    private final BCryptPasswordEncoder encoder;
 
-    public UsuarioService(UsuarioRepository usuarioRepository) {
+    public UsuarioService(UsuarioRepository usuarioRepository, BCryptPasswordEncoder encoder) {
         this.usuarioRepository = usuarioRepository;
+        this.encoder = encoder;
     }
 
     @Transactional
@@ -41,7 +43,6 @@ public class UsuarioService {
         Usuario usuario = new Usuario();
         usuario.setNome(cadastroDTO.nome());
         usuario.setEmail(cadastroDTO.email());
-        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
         usuario.setSenha(encoder.encode(cadastroDTO.senha()));
         usuario.setMoeda(cadastroDTO.moeda());
         usuarioRepository.save(usuario);
