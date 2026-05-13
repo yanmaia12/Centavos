@@ -60,7 +60,7 @@ public class TransacaoService {
     }
 
     @Transactional
-    public TransacaoResponseDTO atualizarTransacao(Long usuarioID, TransacaoDTO transacaoDTO, Long id){
+    public TransacaoResponseDTO atualizarTransacao(Long id, TransacaoDTO transacaoDTO,Long usuarioID){
         Optional<Transacao> transacaoOptional = transacaoRepository.findById(id);
         if (transacaoOptional.isEmpty()){
             throw new RuntimeException("Não existe nenhuma transação com esse ID!");

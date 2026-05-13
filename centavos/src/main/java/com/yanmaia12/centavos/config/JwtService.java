@@ -12,7 +12,7 @@ import java.time.Instant;
 
 @Service
 public class JwtService {
-    @Value("${JWT_SECRET")
+    @Value("${JWT_SECRET}")
     private String secret;
 
     public String gerarToken(Usuario usuario){
