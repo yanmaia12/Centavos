@@ -9,6 +9,7 @@ import com.yanmaia12.centavos.repository.UsuarioRepository;
 import jakarta.transaction.Transactional;
 import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -24,9 +25,9 @@ import java.util.stream.Collectors;
 public class UsuarioService {
 
     private final UsuarioRepository usuarioRepository;
-    private final BCryptPasswordEncoder encoder;
+    private final PasswordEncoder encoder;
 
-    public UsuarioService(UsuarioRepository usuarioRepository, BCryptPasswordEncoder encoder) {
+    public UsuarioService(UsuarioRepository usuarioRepository, PasswordEncoder encoder) {
         this.usuarioRepository = usuarioRepository;
         this.encoder = encoder;
     }

@@ -42,8 +42,9 @@ public class UsuarioController {
     public ResponseEntity<TokenResponseDTO> logarUsuario(@RequestBody @Valid LoginDTO loginDTO){
         var authenticationToken = new UsernamePasswordAuthenticationToken(loginDTO.email(), loginDTO.senha());
         var autentication = manager.authenticate(authenticationToken);
-        var tokenJwt = jwtService.gerarToken((Usuario) autentication.getPrincipal());
-        return ResponseEntity.ok(new TokenResponseDTO(tokenJwt));
+        Usuario usuarioLogado = (Usuario) autentication.getPrincipal();
+        var tokenJwt = jwtService.gerarToken(usuarioLogado);
+        return ResponseEntity.ok(new TokenResponseDTO(tokenJwt, usuarioLogado.getId(), usuarioLogado.getNome(), usuarioLogado.getEmail(), usuarioLogado.getMoeda()));
     }
 
     @PutMapping("/moeda")

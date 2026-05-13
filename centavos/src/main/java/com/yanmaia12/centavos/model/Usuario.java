@@ -23,6 +23,8 @@ public class Usuario implements UserDetails{
     @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Transacao> transacoes = new ArrayList<>();
     private String moeda;
+    @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Meta> metas = new ArrayList<>();
 
     public Usuario() {
     }
@@ -84,6 +86,14 @@ public class Usuario implements UserDetails{
 
     public void setMoeda(String moeda) {
         this.moeda = moeda;
+    }
+
+    public List<Meta> getMetas() {
+        return metas;
+    }
+
+    public void setMetas(List<Meta> metas) {
+        this.metas = metas;
     }
 
     @Override
