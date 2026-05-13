@@ -1,0 +1,27 @@
+package com.yanmaia12.centavos.controller;
+
+import com.yanmaia12.centavos.dtos.MetaDto;
+import com.yanmaia12.centavos.dtos.MetaResponseDTO;
+import com.yanmaia12.centavos.model.Usuario;
+import com.yanmaia12.centavos.service.MetaService;
+import jakarta.validation.Valid;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/metas")
+public class MetaController {
+
+    private final MetaService metaService;
+
+    public MetaController(MetaService metaService) {
+        this.metaService = metaService;
+    }
+
+    @PostMapping("/criar")
+    public ResponseEntity<MetaResponseDTO> criarMeta(@RequestBody @Valid MetaDto metaDto, @AuthenticationPrincipal Usuario usuarioLogado){
+        MetaResponseDTO metaResponseDTO = metaService.criarMeta(metaDto, usuarioLogado.getId());
+        return ResponseEntity.status(201).body(metaResponseDTO);
+    }
+}
