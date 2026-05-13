@@ -30,8 +30,8 @@ public class TransacaoService {
     }
 
     @Transactional
-    public TransacaoResponseDTO criarTransacao(TransacaoDTO transacaoDTO){
-        Optional<Usuario> usuarioOptional = usuarioRepository.findById(transacaoDTO.usuarioId());
+    public TransacaoResponseDTO criarTransacao(TransacaoDTO transacaoDTO, Long usuarioId){
+        Optional<Usuario> usuarioOptional = usuarioRepository.findById(usuarioId);
         if (usuarioOptional.isEmpty()){
             throw new RuntimeException("Usuário não existe!");
         }
@@ -44,20 +44,34 @@ public class TransacaoService {
     }
 
     @Transactional
-    public void apagarTransacao(Long id){
-        if (!transacaoRepository.existsById(id)){
+    public void apagarTransacao(Long id, Long usuarioId){
+        Optional<Transacao> transacaoOptional = transacaoRepository.findById(id);
+        if (transacaoOptional.isEmpty()){
             throw new RuntimeException("Transação não encontrada");
         }
+
+        Transacao transacao = transacaoOptional.get();
+
+        if (!transacao.getUsuario().getId().equals(usuarioId)){
+            throw new RuntimeException("Acesso negado: você não tem permissão para apagar a transação de outro usuário!");
+        }
+
         transacaoRepository.deleteById(id);
     }
 
     @Transactional
-    public TransacaoResponseDTO atualizarTransacao(TransacaoDTO transacaoDTO, Long id){
+    public TransacaoResponseDTO atualizarTransacao(Long usuarioID, TransacaoDTO transacaoDTO, Long id){
         Optional<Transacao> transacaoOptional = transacaoRepository.findById(id);
         if (transacaoOptional.isEmpty()){
             throw new RuntimeException("Não existe nenhuma transação com esse ID!");
         }
+
         Transacao transacao = transacaoOptional.get();
+
+        if (!transacao.getUsuario().getId().equals(usuarioID)){
+            throw new RuntimeException("Acesso negado: você não tem permissão para atualizar a transação de outro usuário!");
+        }
+
         transacao.setValor(transacaoDTO.valor());
         transacao.setDescricao(transacaoDTO.descricao());
         transacao.setData(transacaoDTO.data());
@@ -70,19 +84,19 @@ public class TransacaoService {
     }
 
     @Transactional()
-    public List<TransacaoResponseDTO> listarTransacoesUsuario(Long id){
-        Optional<Usuario> usuarioOptional = usuarioRepository.findById(id);
+    public List<TransacaoResponseDTO> listarTransacoesUsuario(Long usuarioId){
+        Optional<Usuario> usuarioOptional = usuarioRepository.findById(usuarioId);
         if (usuarioOptional.isEmpty()){
             throw new RuntimeException("Usuário não cadastrado!");
         }
-        List<Transacao> listaTransacao = transacaoRepository.findByUsuarioId(id);
+        List<Transacao> listaTransacao = transacaoRepository.findByUsuarioId(usuarioId);
         return listaTransacao.stream().map(t -> new TransacaoResponseDTO(t.getId(), t.getValor(),
                 t.getDescricao(), t.getData(), t.getTipo(), t.getCategoria())).toList();
     }
 
     @Transactional
-    public List<TransacaoResponseDTO> filtrarPorCategoria(Long id, String categoriaString){
-        Optional<Usuario> usuarioOptional = usuarioRepository.findById(id);
+    public List<TransacaoResponseDTO> filtrarPorCategoria(Long usuarioId, String categoriaString){
+        Optional<Usuario> usuarioOptional = usuarioRepository.findById(usuarioId);
         if (usuarioOptional.isEmpty()){
             throw new RuntimeException("Usuário não encontrado");
         }
@@ -97,8 +111,8 @@ public class TransacaoService {
     }
 
     @Transactional
-    public Map<String, ResumoMensalDTO> resumoMensal(Long id){
-        Optional<Usuario> usuarioOptional = usuarioRepository.findById(id);
+    public Map<String, ResumoMensalDTO> resumoMensal(Long usuarioId){
+        Optional<Usuario> usuarioOptional = usuarioRepository.findById(usuarioId);
         if (usuarioOptional.isEmpty()){
             throw new RuntimeException("Usuário não encontrado");
         }

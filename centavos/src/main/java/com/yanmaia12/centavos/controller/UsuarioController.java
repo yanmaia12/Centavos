@@ -1,10 +1,15 @@
 package com.yanmaia12.centavos.controller;
 
+import com.yanmaia12.centavos.config.JwtService;
+import com.yanmaia12.centavos.config.SecurityConfiguration;
 import com.yanmaia12.centavos.dtos.*;
 import com.yanmaia12.centavos.model.Usuario;
 import com.yanmaia12.centavos.service.UsuarioService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,9 +22,13 @@ import java.util.Map;
 public class UsuarioController {
 
     private final UsuarioService usuarioService;
+    private final AuthenticationManager manager;
+    private final JwtService jwtService;
 
-    public UsuarioController(UsuarioService usuarioService) {
+    public UsuarioController(UsuarioService usuarioService, AuthenticationManager manager, JwtService jwtService) {
         this.usuarioService = usuarioService;
+        this.manager = manager;
+        this.jwtService = jwtService;
     }
 
     @PostMapping("/cadastrar")
@@ -30,20 +39,22 @@ public class UsuarioController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<UsuarioResponseDTO> logarUsuario(@RequestBody @Valid LoginDTO loginDTO){
-        UsuarioResponseDTO usuarioResponseDTO = usuarioService.logarUsuario(loginDTO);
+    public ResponseEntity<TokenResponseDTO> logarUsuario(@RequestBody @Valid LoginDTO loginDTO){
+        var authenticationToken = new UsernamePasswordAuthenticationToken(loginDTO.email(), loginDTO.senha());
+        var autentication = manager.authenticate(authenticationToken);
+        var tokenJwt = jwtService.gerarToken((Usuario) autentication.getPrincipal());
+        return ResponseEntity.ok(new TokenResponseDTO(tokenJwt));
+    }
+
+    @PutMapping("/moeda")
+    public ResponseEntity<UsuarioResponseDTO> atualizarMoeda(@AuthenticationPrincipal Usuario usuarioLogado, @RequestParam String moeda){
+        UsuarioResponseDTO usuarioResponseDTO = usuarioService.atualizarMoeda(usuarioLogado.getId(), moeda);
         return ResponseEntity.ok(usuarioResponseDTO);
     }
 
-    @PutMapping("/{id}/moeda")
-    public ResponseEntity<UsuarioResponseDTO> atualizarMoeda(@PathVariable Long id, @RequestParam String moeda){
-        UsuarioResponseDTO usuarioResponseDTO = usuarioService.atualizarMoeda(id, moeda);
-        return ResponseEntity.ok(usuarioResponseDTO);
-    }
-
-    @GetMapping("/{id}/saldo")
-    public ResponseEntity<BigDecimal> getSaldo(@PathVariable Long id){
-        BigDecimal saldo = usuarioService.calcularSaldo(id);
+    @GetMapping("/saldo")
+    public ResponseEntity<BigDecimal> getSaldo(@AuthenticationPrincipal Usuario usuarioLogado){
+        BigDecimal saldo = usuarioService.calcularSaldo(usuarioLogado.getId());
         return ResponseEntity.ok(saldo);
     }
 

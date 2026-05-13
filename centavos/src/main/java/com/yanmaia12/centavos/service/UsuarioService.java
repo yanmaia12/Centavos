@@ -8,6 +8,7 @@ import com.yanmaia12.centavos.model.Usuario;
 import com.yanmaia12.centavos.repository.UsuarioRepository;
 import jakarta.transaction.Transactional;
 import org.mindrot.jbcrypt.BCrypt;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -40,22 +41,10 @@ public class UsuarioService {
         Usuario usuario = new Usuario();
         usuario.setNome(cadastroDTO.nome());
         usuario.setEmail(cadastroDTO.email());
-        usuario.setSenha(BCrypt.hashpw(cadastroDTO.senha(), BCrypt.gensalt()));
+        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+        usuario.setSenha(encoder.encode(cadastroDTO.senha()));
         usuario.setMoeda(cadastroDTO.moeda());
         usuarioRepository.save(usuario);
-        return new UsuarioResponseDTO(usuario.getNome(), usuario.getId(), usuario.getEmail(), usuario.getMoeda());
-    }
-
-    @Transactional
-    public UsuarioResponseDTO logarUsuario(LoginDTO loginDTO){
-        Optional<Usuario> usuarioOptional = usuarioRepository.findByEmail(loginDTO.email());
-        if (usuarioOptional.isEmpty()){
-            throw new RuntimeException("Nenhum usuário cadastrado com esse email!");
-        }
-        Usuario usuario = usuarioOptional.get();
-        if (!BCrypt.checkpw(loginDTO.senha(), usuario.getSenha())){
-            throw new RuntimeException("As senhas não são iguais, tente novamente!");
-        }
         return new UsuarioResponseDTO(usuario.getNome(), usuario.getId(), usuario.getEmail(), usuario.getMoeda());
     }
 
