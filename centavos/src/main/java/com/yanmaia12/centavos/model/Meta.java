@@ -18,19 +18,20 @@ public class Meta {
     private LocalDate data;
     private Boolean finalizada;
     @ManyToOne()
-    private Usuario usuarioId;
+    @JoinColumn(name = "usuario_id")
+    private Usuario usuario;
 
     public Meta() {
     }
 
-    public Meta(String nome, String descricao, BigDecimal valorFinal, BigDecimal valorAtual, LocalDate data, Boolean finalizada, Usuario usuarioId) {
+    public Meta(String nome, String descricao, BigDecimal valorFinal, BigDecimal valorAtual, LocalDate data, Boolean finalizada, Usuario usuario) {
         this.nome = nome;
         this.descricao = descricao;
         this.valorFinal = valorFinal;
         this.valorAtual = valorAtual;
         this.data = data;
         this.finalizada = finalizada;
-        this.usuarioId = usuarioId;
+        this.usuario = usuario;
     }
 
     public Long getId() {
@@ -89,11 +90,11 @@ public class Meta {
         this.finalizada = finalizada;
     }
 
-    public Usuario getUsuarioId() {
-        return usuarioId;
+    public Usuario getUsuario() {
+        return usuario;
     }
 
-    public void setUsuarioId(Usuario usuarioId) {
-        this.usuarioId = usuarioId;
+    public void setUsuario(Usuario usuario) {
+        this.usuario = usuario;
     }
 }
