@@ -32,4 +32,16 @@ public class MetaController {
         List<MetaResponseDTO> listaMetas = metaService.listarMetasUsuario(usuarioLogado.getId());
         return ResponseEntity.ok(listaMetas);
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> apagarMeta(@PathVariable Long id, @AuthenticationPrincipal Usuario usuarioLogado){
+        metaService.apagarMeta(id, usuarioLogado.getId());
+        return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/atualizar/{id}")
+    public ResponseEntity<MetaResponseDTO> atualizarMeta(@PathVariable Long id, @RequestBody @Valid MetaDto metaDto, @AuthenticationPrincipal Usuario usuarioLogado){
+        MetaResponseDTO metaResponseDTO = metaService.atualizarMeta(id, metaDto, usuarioLogado.getId());
+        return ResponseEntity.ok(metaResponseDTO);
+    }
 }

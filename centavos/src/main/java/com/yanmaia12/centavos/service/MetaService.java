@@ -77,4 +77,26 @@ public class MetaService{
 
         metaRepository.deleteById(metaId);
     }
+
+    @Transactional
+    public MetaResponseDTO atualizarMeta(Long metaId, MetaDto metaDto, Long userId){
+        Optional<Meta> metaOptional = metaRepository.findById(metaId);
+        if (metaOptional.isEmpty()) throw new RuntimeException("Meta não encontrada!");
+
+        Meta meta = metaOptional.get();
+
+        if (!meta.getUsuario().getId().equals(userId)) throw new RuntimeException("Acesso negado! Você não pode atualizar a meta de outro usuário!");
+
+        meta.setNome(metaDto.nome());
+        meta.setDescricao(metaDto.descricao());
+        meta.setValorFinal(metaDto.valorFinal());
+
+        if (meta.getValorFinal().compareTo(meta.getValorAtual()) <= 0){
+            meta.setFinalizada(true);
+        }else meta.setFinalizada(false);
+
+        metaRepository.save(meta);
+        return new MetaResponseDTO(meta.getId(), meta.getNome(), meta.getDescricao(),
+                meta.getValorFinal(), meta.getValorAtual(), meta.getData(), meta.getFinalizada());
+    }
 }
