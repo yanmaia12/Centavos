@@ -9,6 +9,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/metas")
 public class MetaController {
@@ -23,5 +25,11 @@ public class MetaController {
     public ResponseEntity<MetaResponseDTO> criarMeta(@RequestBody @Valid MetaDto metaDto, @AuthenticationPrincipal Usuario usuarioLogado){
         MetaResponseDTO metaResponseDTO = metaService.criarMeta(metaDto, usuarioLogado.getId());
         return ResponseEntity.status(201).body(metaResponseDTO);
+    }
+
+    @GetMapping("/usuario")
+    public ResponseEntity<List<MetaResponseDTO>> listarMetasUsuario(@AuthenticationPrincipal Usuario usuarioLogado){
+        List<MetaResponseDTO> listaMetas = metaService.listarMetasUsuario(usuarioLogado.getId());
+        return ResponseEntity.ok(listaMetas);
     }
 }

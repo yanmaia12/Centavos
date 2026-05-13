@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "metas")
@@ -20,6 +22,8 @@ public class Meta {
     @ManyToOne()
     @JoinColumn(name = "usuario_id")
     private Usuario usuario;
+    @OneToMany(mappedBy = "meta", cascade = CascadeType.ALL)
+    private List<Transacao> transacoes = new ArrayList<>();
 
     public Meta() {
     }
@@ -96,5 +100,13 @@ public class Meta {
 
     public void setUsuario(Usuario usuario) {
         this.usuario = usuario;
+    }
+
+    public List<Transacao> getTransacoes() {
+        return transacoes;
+    }
+
+    public void setTransacoes(List<Transacao> transacoes) {
+        this.transacoes = transacoes;
     }
 }

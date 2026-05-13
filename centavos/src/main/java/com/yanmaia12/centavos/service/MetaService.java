@@ -7,9 +7,11 @@ import com.yanmaia12.centavos.model.Usuario;
 import com.yanmaia12.centavos.repository.MetaRepository;
 import com.yanmaia12.centavos.repository.UsuarioRepository;
 import jakarta.transaction.Transactional;
+import jdk.dynalink.linker.LinkerServices;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -43,5 +45,18 @@ public class MetaService{
         meta = metaRepository.save(meta);
 
         return new MetaResponseDTO(meta.getId(), meta.getNome(), meta.getDescricao(), meta.getValorFinal(), meta.getValorAtual(), meta.getData(), meta.getFinalizada());
+    }
+
+    @Transactional
+    public List<MetaResponseDTO> listarMetasUsuario(Long userId){
+        Optional<Usuario> usuarioOptional = usuarioRepository.findById(userId);
+        if (usuarioOptional.isEmpty()){
+            throw new RuntimeException("Usuário não encontrado!");
+        }
+
+        List<Meta> listaMetas = metaRepository.findByUsuarioId(userId);
+
+        return listaMetas.stream().map(m -> new MetaResponseDTO(m.getId(), m.getNome(), m.getDescricao(),
+                m.getValorFinal(), m.getValorAtual(), m.getData(), m.getFinalizada())).toList();
     }
 }
