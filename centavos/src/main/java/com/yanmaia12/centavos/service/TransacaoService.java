@@ -164,12 +164,15 @@ public class TransacaoService {
         }
 
         Usuario usuario = usuarioOptional.get();
-        Categoria categoria = Categoria.valueOf(categoriaString);
+        Categoria categoria;
+        try {
+            categoria = Categoria.valueOf(categoriaString);
+        }catch (IllegalArgumentException e){
+            throw new RuntimeException("Categoria inválida: " + categoriaString);
+        }
 
-        return usuario.getTransacoes().stream()
-                .filter(t -> t.getCategoria() == categoria)
-                .map(t -> new TransacaoResponseDTO(t.getId(), t.getValor(), t.getDescricao(),
-                        t.getData(), t.getTipo(), t.getCategoria(), t.getMeta() != null ? t.getMeta().getId() : null)).toList();
+        return transacaoRepository.findByUsuarioIdAndCategoria(usuario.getId(), categoria).stream().map(t -> new TransacaoResponseDTO(t.getId(), t.getValor(), t.getDescricao(), t.getData(),
+                t.getTipo(), t.getCategoria(), t.getMeta().getId())).toList();
     }
 
     @Transactional
