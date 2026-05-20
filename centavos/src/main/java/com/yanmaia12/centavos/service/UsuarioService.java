@@ -3,6 +3,8 @@ package com.yanmaia12.centavos.service;
 import com.yanmaia12.centavos.dtos.*;
 import com.yanmaia12.centavos.enums.Categoria;
 import com.yanmaia12.centavos.enums.TipoTransacao;
+import com.yanmaia12.centavos.exception.BusinessException;
+import com.yanmaia12.centavos.exception.ResourceNotFoundException;
 import com.yanmaia12.centavos.model.Transacao;
 import com.yanmaia12.centavos.model.Usuario;
 import com.yanmaia12.centavos.repository.UsuarioRepository;
@@ -36,10 +38,10 @@ public class UsuarioService {
     public UsuarioResponseDTO cadastrarUsuario(CadastroDTO cadastroDTO){
         boolean existeEmail = usuarioRepository.existsByEmail(cadastroDTO.email());
         if (existeEmail){
-            throw new RuntimeException("Esse email já está cadastrado!");
+            throw new BusinessException("Esse email já está cadastrado!");
         }
         if (!Objects.equals(cadastroDTO.senha(), cadastroDTO.confirmarSenha())){
-            throw new RuntimeException("Senhas não são iguais!");
+            throw new BusinessException("Senhas não são iguais!");
         }
         Usuario usuario = new Usuario();
         usuario.setNome(cadastroDTO.nome());
@@ -54,7 +56,7 @@ public class UsuarioService {
     public UsuarioResponseDTO atualizarMoeda(Long id, String moeda){
         Optional<Usuario> usuarioOptional = usuarioRepository.findById(id);
         if (usuarioOptional.isEmpty()){
-            throw new RuntimeException("Usuário não encontrado");
+            throw new ResourceNotFoundException("Usuário não encontrado");
         }
         Usuario usuario = usuarioOptional.get();
         usuario.setMoeda(moeda);
@@ -66,7 +68,7 @@ public class UsuarioService {
     public BigDecimal calcularSaldo(Long id){
         Optional<Usuario> usuarioOptional = usuarioRepository.findById(id);
         if (usuarioOptional.isEmpty()){
-            throw new RuntimeException("Usuário não encontrado");
+            throw new ResourceNotFoundException("Usuário não encontrado");
         }
 
         Usuario usuario = usuarioOptional.get();

@@ -1,5 +1,6 @@
 package com.yanmaia12.centavos.service;
 
+import com.yanmaia12.centavos.exception.ResourceNotFoundException;
 import com.yanmaia12.centavos.repository.UsuarioRepository;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -18,6 +19,6 @@ public class AutenticacaoService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         return usuarioRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado: " + email));
+                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado: " + email));
     }
 }

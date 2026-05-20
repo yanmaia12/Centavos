@@ -5,6 +5,9 @@ import com.yanmaia12.centavos.dtos.TransacaoDTO;
 import com.yanmaia12.centavos.dtos.TransacaoResponseDTO;
 import com.yanmaia12.centavos.enums.Categoria;
 import com.yanmaia12.centavos.enums.TipoTransacao;
+import com.yanmaia12.centavos.exception.AccessDeniedException;
+import com.yanmaia12.centavos.exception.BusinessException;
+import com.yanmaia12.centavos.exception.ResourceNotFoundException;
 import com.yanmaia12.centavos.model.Meta;
 import com.yanmaia12.centavos.model.Transacao;
 import com.yanmaia12.centavos.model.Usuario;
@@ -37,7 +40,7 @@ public class TransacaoService {
     public TransacaoResponseDTO criarTransacao(TransacaoDTO transacaoDTO, Long usuarioId){
         Optional<Usuario> usuarioOptional = usuarioRepository.findById(usuarioId);
         if (usuarioOptional.isEmpty()){
-            throw new RuntimeException("Usuário não existe!");
+            throw new ResourceNotFoundException("Usuário não existe!");
         }
         Transacao transacao = new Transacao(transacaoDTO.valor(), transacaoDTO.descricao(),
                 transacaoDTO.data(), transacaoDTO.tipo(), transacaoDTO.categoria(), usuarioOptional.get());
@@ -46,10 +49,10 @@ public class TransacaoService {
 
         if (metaId != null){
 
-            if (transacao.getCategoria() != Categoria.COFRE) throw new RuntimeException("Apenas transações da categoria cofre podem ir para metas!");
+            if (transacao.getCategoria() != Categoria.COFRE) throw new BusinessException("Apenas transações da categoria cofre podem ir para metas!");
 
             Meta meta = metaRepository.findById(metaId)
-                    .orElseThrow(() -> new RuntimeException("Meta não encontrada"));
+                    .orElseThrow(() -> new ResourceNotFoundException("Meta não encontrada"));
 
             transacao.setMeta(meta);
             meta.setValorAtual(meta.getValorAtual().add(transacao.getValor()));
@@ -69,13 +72,13 @@ public class TransacaoService {
     public void apagarTransacao(Long id, Long usuarioId){
         Optional<Transacao> transacaoOptional = transacaoRepository.findById(id);
         if (transacaoOptional.isEmpty()){
-            throw new RuntimeException("Transação não encontrada");
+            throw new ResourceNotFoundException("Transação não encontrada");
         }
 
         Transacao transacao = transacaoOptional.get();
 
         if (!transacao.getUsuario().getId().equals(usuarioId)){
-            throw new RuntimeException("Acesso negado: você não tem permissão para apagar a transação de outro usuário!");
+            throw new AccessDeniedException("Acesso negado: você não tem permissão para apagar a transação de outro usuário!");
         }
 
         if (transacao.getMeta() != null){
@@ -96,13 +99,13 @@ public class TransacaoService {
     public TransacaoResponseDTO atualizarTransacao(Long id, TransacaoDTO transacaoDTO,Long usuarioID){
         Optional<Transacao> transacaoOptional = transacaoRepository.findById(id);
         if (transacaoOptional.isEmpty()){
-            throw new RuntimeException("Não existe nenhuma transação com esse ID!");
+            throw new ResourceNotFoundException("Não existe nenhuma transação com esse ID!");
         }
 
         Transacao transacao = transacaoOptional.get();
 
         if (!transacao.getUsuario().getId().equals(usuarioID)){
-            throw new RuntimeException("Acesso negado: você não tem permissão para atualizar a transação de outro usuário!");
+            throw new AccessDeniedException("Acesso negado: você não tem permissão para atualizar a transação de outro usuário!");
         }
 
         if (transacao.getMeta() != null){
@@ -124,10 +127,10 @@ public class TransacaoService {
 
         if (transacaoDTO.metaId() != null){
 
-            if (transacao.getCategoria() != Categoria.COFRE) throw new RuntimeException("Apenas transações da categoria cofre podem ir para metas!");
+            if (transacao.getCategoria() != Categoria.COFRE) throw new BusinessException("Apenas transações da categoria cofre podem ir para metas!");
 
             Optional<Meta> metaOptional = metaRepository.findById(transacaoDTO.metaId());
-            if (metaOptional.isEmpty()) throw new RuntimeException("Nenhuma meta encontrada com esse id!");
+            if (metaOptional.isEmpty()) throw new ResourceNotFoundException("Nenhuma meta encontrada com esse id!");
 
             Meta meta = metaOptional.get();
 
@@ -149,7 +152,7 @@ public class TransacaoService {
     public List<TransacaoResponseDTO> listarTransacoesUsuario(Long usuarioId){
         Optional<Usuario> usuarioOptional = usuarioRepository.findById(usuarioId);
         if (usuarioOptional.isEmpty()){
-            throw new RuntimeException("Usuário não cadastrado!");
+            throw new ResourceNotFoundException("Usuário não cadastrado!");
         }
         List<Transacao> listaTransacao = transacaoRepository.findByUsuarioId(usuarioId);
         return listaTransacao.stream().map(t -> new TransacaoResponseDTO(t.getId(), t.getValor(),
@@ -160,7 +163,7 @@ public class TransacaoService {
     public List<TransacaoResponseDTO> filtrarPorCategoria(Long usuarioId, String categoriaString){
         Optional<Usuario> usuarioOptional = usuarioRepository.findById(usuarioId);
         if (usuarioOptional.isEmpty()){
-            throw new RuntimeException("Usuário não encontrado");
+            throw new ResourceNotFoundException("Usuário não encontrado");
         }
 
         Usuario usuario = usuarioOptional.get();
@@ -168,7 +171,7 @@ public class TransacaoService {
         try {
             categoria = Categoria.valueOf(categoriaString);
         }catch (IllegalArgumentException e){
-            throw new RuntimeException("Categoria inválida: " + categoriaString);
+            throw new BusinessException("Categoria inválida: " + categoriaString);
         }
 
         return transacaoRepository.findByUsuarioIdAndCategoria(usuario.getId(), categoria).stream().map(t -> new TransacaoResponseDTO(t.getId(), t.getValor(), t.getDescricao(), t.getData(),
@@ -179,7 +182,7 @@ public class TransacaoService {
     public Map<String, ResumoMensalDTO> resumoMensal(Long usuarioId){
         Optional<Usuario> usuarioOptional = usuarioRepository.findById(usuarioId);
         if (usuarioOptional.isEmpty()){
-            throw new RuntimeException("Usuário não encontrado");
+            throw new ResourceNotFoundException("Usuário não encontrado");
         }
         Usuario usuario = usuarioOptional.get();
 

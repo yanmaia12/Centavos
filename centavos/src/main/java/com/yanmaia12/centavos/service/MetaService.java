@@ -2,6 +2,8 @@ package com.yanmaia12.centavos.service;
 
 import com.yanmaia12.centavos.dtos.MetaDto;
 import com.yanmaia12.centavos.dtos.MetaResponseDTO;
+import com.yanmaia12.centavos.exception.AccessDeniedException;
+import com.yanmaia12.centavos.exception.ResourceNotFoundException;
 import com.yanmaia12.centavos.model.Meta;
 import com.yanmaia12.centavos.model.Transacao;
 import com.yanmaia12.centavos.model.Usuario;
@@ -31,7 +33,7 @@ public class MetaService{
     public MetaResponseDTO criarMeta(MetaDto metaDto, Long userId){
         Optional<Usuario> usuarioOptional = usuarioRepository.findById(userId);
         if (usuarioOptional.isEmpty()){
-            throw new RuntimeException("Usuário não encontrado!");
+            throw new ResourceNotFoundException("Usuário não encontrado!");
         }
         Usuario usuario = usuarioOptional.get();
 
@@ -53,7 +55,7 @@ public class MetaService{
     public List<MetaResponseDTO> listarMetasUsuario(Long userId){
         Optional<Usuario> usuarioOptional = usuarioRepository.findById(userId);
         if (usuarioOptional.isEmpty()){
-            throw new RuntimeException("Usuário não encontrado!");
+            throw new ResourceNotFoundException("Usuário não encontrado!");
         }
 
         List<Meta> listaMetas = metaRepository.findByUsuarioId(userId);
@@ -65,11 +67,11 @@ public class MetaService{
     @Transactional
     public void apagarMeta(Long metaId, Long userId){
         Optional<Meta> metaOptional = metaRepository.findById(metaId);
-        if (metaOptional.isEmpty()) throw new RuntimeException("Meta não encontrada!");
+        if (metaOptional.isEmpty()) throw new ResourceNotFoundException("Meta não encontrada!");
 
         Meta meta = metaOptional.get();
 
-        if (!meta.getUsuario().getId().equals(userId)) throw new RuntimeException("Acesso negado! Você não pode apagar a meta de outro usuário!");
+        if (!meta.getUsuario().getId().equals(userId)) throw new AccessDeniedException("Acesso negado! Você não pode apagar a meta de outro usuário!");
 
         for (Transacao transacao : meta.getTransacoes()){
             transacao.setMeta(null);
@@ -81,11 +83,11 @@ public class MetaService{
     @Transactional
     public MetaResponseDTO atualizarMeta(Long metaId, MetaDto metaDto, Long userId){
         Optional<Meta> metaOptional = metaRepository.findById(metaId);
-        if (metaOptional.isEmpty()) throw new RuntimeException("Meta não encontrada!");
+        if (metaOptional.isEmpty()) throw new ResourceNotFoundException("Meta não encontrada!");
 
         Meta meta = metaOptional.get();
 
-        if (!meta.getUsuario().getId().equals(userId)) throw new RuntimeException("Acesso negado! Você não pode atualizar a meta de outro usuário!");
+        if (!meta.getUsuario().getId().equals(userId)) throw new AccessDeniedException("Acesso negado! Você não pode atualizar a meta de outro usuário!");
 
         meta.setNome(metaDto.nome());
         meta.setDescricao(metaDto.descricao());
